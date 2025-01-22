@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -38,7 +38,7 @@ class Task(db.Model):
 @app.route('/init-db', methods=['GET'])
 def init_db():
     with app.app_context():
-        db.create_all()
+        db.create_all()  # Buat tabel
     return jsonify({"message": "Database and tables created successfully!"})
 
 # Endpoint untuk register user
@@ -80,6 +80,52 @@ def login():
         return jsonify({"message": "Invalid credentials"}), 401
 
     return jsonify({"message": "Login successful"}), 200
+
+# Endpoint untuk mendapatkan semua proyek
+@app.route("/api/projects", methods=["GET"])
+def get_projects():
+    projects = Project.query.all()
+    return jsonify([{
+        "id": project.id,
+        "name": project.name,
+        "description": project.description,
+        "created_by": project.created_by
+    } for project in projects])
+
+# Endpoint untuk menambah proyek baru
+@app.route("/api/projects", methods=["POST"])
+def add_project():
+    data = request.json
+    name = data.get("name")
+    description = data.get("description")
+    created_by = data.get("created_by")
+
+    if not name or not created_by:
+        return jsonify({"message": "Name and created_by are required"}), 400
+
+    new_project = Project(name=name, description=description, created_by=created_by)
+    db.session.add(new_project)
+    db.session.commit()
+
+    return jsonify({"message": "Project added successfully"}), 200
+
+# Endpoint untuk menambah tugas ke dalam proyek
+@app.route("/api/tasks", methods=["POST"])
+def add_task():
+    data = request.json
+    title = data.get("title")
+    description = data.get("description")
+    status = data.get("status")
+    project_id = data.get("project_id")
+
+    if not title or not project_id:
+        return jsonify({"message": "Title and project_id are required"}), 400
+
+    new_task = Task(title=title, description=description, status=status, project_id=project_id)
+    db.session.add(new_task)
+    db.session.commit()
+
+    return jsonify({"message": "Task added successfully"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
