@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Itinerary</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Your Itineraries</h1>
+    </header>
+    <main>
+      <div id="map" style="height: 500px"></div>
+    </main>
+    <script>
+      // Initialize the map
+      const map = L.map("map").setView([0, 0], 2); // World view
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Fetch itineraries and add markers to the map
+      fetch("/api/itinerary/")
+        .then((response) => response.json())
+        .then((data) => {
+          data.forEach((item) => {
+            const marker = L.marker([item.latitude, item.longitude]).addTo(map);
+            marker.bindPopup(
+              `<b>${item.destination}</b><br>${item.start_date} - ${item.end_date}`
+            );
+          });
+        });
+    </script>
+  </body>
+</html>

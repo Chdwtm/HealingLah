@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recommendations</title>
+  </head>
+  <body>
+    <header>
+      <h1>Travel Recommendations</h1>
+    </header>
+    <main>
+      <form id="recommendForm">
+        <label for="destination">Your Destination:</label>
+        <input type="text" id="destination" required />
+        <label for="category">Category (Optional):</label>
+        <input type="text" id="category" />
+        <button type="submit">Get Recommendations</button>
+      </form>
+      <div id="recommendations"></div>
+    </main>
+    <script>
+      const form = document.getElementById("recommendForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const destination = document.getElementById("destination").value;
+        const category = document.getElementById("category").value;
+
+        const response = await fetch(
+          `/api/recommendation?destination=${destination}&category=${category}`
+        );
+        const data = await response.json();
+
+        const results = document.getElementById("recommendations");
+        results.innerHTML = data
+          .map((item) => `<p>${item.destination} (${item.category})</p>`)
+          .join("");
+      });
+    </script>
+  </body>
+</html>
